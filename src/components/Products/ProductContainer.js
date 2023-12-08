@@ -23,30 +23,26 @@ import { productsAPI, productsDeleteAPI } from "../../api/products";
 import { Stack } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { setProducts } from "../../store/slice/productsSlice";
-import SelectCategory from "./SelectCategory";
 
 export default function ProductContainer() {
   const dispatch = useDispatch();
-  const state = useSelector((state) => state);
+  const productsState = useSelector((state) => state.productsSlice);
   const [page, setPage] = React.useState(1);
 
-  const getProduct = React.useCallback(
-    async (pageNumber) => {
-      try {
-        const res = await productsAPI(pageNumber);
-        if (res && res.results) {
-          dispatch(setProducts(res));
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
+  const getProduct = async (pageNumber) => {
+    try {
+      const res = await productsAPI(pageNumber);
+      if (res && res.results) {
+        dispatch(setProducts(res));
       }
-    },
-    [dispatch]
-  );
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
 
   React.useEffect(() => {
     getProduct(page);
-  }, [page, getProduct]); // Include state changes that should trigger re-fetching
+  }, [page]);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -65,10 +61,11 @@ export default function ProductContainer() {
       if (result.isConfirmed) {
         productsDeleteAPI(id)
           .then((res) => {
-            let newArray = [...state.productsSlice.data].filter(
+            let newArray = [...productsState.data].filter(
               (item) => item.id !== id
             );
             dispatch(setProducts(newArray));
+            getProduct(page);
           })
           .catch(() => {});
         toast.success("The operation is successful!", {
@@ -79,7 +76,7 @@ export default function ProductContainer() {
     });
   };
 
-  if (!state.productsSlice.data || state.productsSlice.data.length === 0) {
+  if (!productsState.data || productsState.data.length === 0) {
     return <LoadingImage src={LoadGif} alt="loading" />;
   }
 
@@ -100,7 +97,7 @@ export default function ProductContainer() {
           flexWrap: "wrap",
         }}
       >
-        {state.productsSlice.data.map((item) => {
+        {productsState.data.map((item) => {
           if (item && item.image) {
             return (
               <Grid
@@ -178,7 +175,7 @@ export default function ProductContainer() {
       </TableContainer>
       <Stack spacing={5} className="mt-5">
         <Pagination
-          count={Math.ceil(state.productsSlice.count / 12) || 1}
+          count={Math.ceil(productsState.count / 12) || 1}
           color="primary"
           onChange={(event, newPage) => {
             if (newPage !== page) {
