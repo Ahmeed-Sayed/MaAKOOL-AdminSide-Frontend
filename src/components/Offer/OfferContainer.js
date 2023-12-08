@@ -35,16 +35,13 @@ const columns = [
 ];
 
 export default function OfferContainer() {
-
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
 
-
-
   const getOffers = async () => {
     try {
-      const res = await offersAPI(); 
-      dispatch(setOffers(res)); 
+      const res = await offersAPI();
+      dispatch(setOffers(res));
     } catch (error) {
       // Handle errors here
       console.error("Error fetching offers:", error);
@@ -57,8 +54,8 @@ export default function OfferContainer() {
 
   const deleteOffers = (id) => {
     Swal.fire({
-      title: "Are you sure it’s deleted ?",
-      text: "Attention! If you delete this offer, it will not come back...?",
+      title: "Delete Offer",
+      text: `Are you sure you want to delete offer #${id}?`,
       showCancelButton: true,
       cancelButtonColor: "transparent",
       cancelButtonText: "cancel",
@@ -68,10 +65,12 @@ export default function OfferContainer() {
       if (result.isConfirmed) {
         offersDeleteAPI(id)
           .then((res) => {
-            let newArray = [...state.offersSlice.data].filter((item) => item.id !== id);
+            let newArray = [...state.offersSlice.data].filter(
+              (item) => item.id !== id
+            );
             dispatch(setOffers(newArray));
           })
-          .catch(() => { });
+          .catch(() => {});
         toast.success("The operation is successful!", {
           autoClose: 1000,
           pauseOnHover: true,
@@ -96,113 +95,114 @@ export default function OfferContainer() {
     return <LoadingImage src={LoadGif} alt="loading" />;
   }
 
-return (
-  <OffersStyled className="category-page">
-    <OffersDiv>
-      <OffersSpan>Offers</OffersSpan>
-      <AddProductBtn name="add offer" pagename="offers" placement="end" />
-    </OffersDiv>
+  return (
+    <OffersStyled className="category-page">
+      <OffersDiv>
+        <OffersSpan>Offers</OffersSpan>
+        <AddProductBtn name="add offer" pagename="offers" placement="end" />
+      </OffersDiv>
 
-    <Paper sx={{ width: "99%", boxShadow: "none" }}>
-      <TableContainer sx={{ maxHeight: 440 }}>
-        <Table stickyHeader aria-label="sticky table">
-          <TableHead>
-            <TableRow>
-              {columns?.map((column) => (
-                <TableCell
-                  key={column.id}
-                  align={column.align}
-                  cellwidth={column.minWidth}
-                >
-                  {column.label.toUpperCase()}
+      <Paper sx={{ width: "99%", boxShadow: "none" }}>
+        <TableContainer sx={{ maxHeight: 440 }}>
+          <Table stickyHeader aria-label="sticky table">
+            <TableHead>
+              <TableRow>
+                {columns?.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    align={column.align}
+                    cellwidth={column.minWidth}
+                  >
+                    {column.label.toUpperCase()}
+                  </TableCell>
+                ))}
+                <TableCell align={"center"} cellwidth={"20"}>
+                  Update
                 </TableCell>
-              ))}
-              <TableCell align={"center"} cellwidth={"20"}>
-                Update
-              </TableCell>
-              <TableCell align={"center"} cellwidth={"20"}>
-                Delete
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {state.offersSlice.data?.length > 0 ? (
-              state.offersSlice.data
-                ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  return (
-										<TableRow
-											hover
-											role="checkbox"
-											tabIndex={-1}
-											key={`table-row-${index}`}>
-											{columns.map((column) => {
-												const value = row?.[column.id];
-												return (
-													<TableCell
-														key={`table-cell-${index}-${column.id}`}
-														align={column.align}>
-														{column.id === "image" ? (
-															<Image
-																width="60"
-																className="rounded"
-																alt={column.id}
-																src={`http://127.0.0.1:8000${value}`}
-															/>
-														) : (
-															value
-														)}
-													</TableCell>
-												);
-											})}
+                <TableCell align={"center"} cellwidth={"20"}>
+                  Delete
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {state.offersSlice.data?.length > 0 ? (
+                state.offersSlice.data
+                  ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => {
+                    return (
+                      <TableRow
+                        hover
+                        role="checkbox"
+                        tabIndex={-1}
+                        key={`table-row-${index}`}
+                      >
+                        {columns.map((column) => {
+                          const value = row?.[column.id];
+                          return (
+                            <TableCell
+                              key={`table-cell-${index}-${column.id}`}
+                              align={column.align}
+                            >
+                              {column.id === "image" ? (
+                                <Image
+                                  width="60"
+                                  className="rounded"
+                                  alt={column.id}
+                                  src={`http://127.0.0.1:8000${value}`}
+                                />
+                              ) : (
+                                value
+                              )}
+                            </TableCell>
+                          );
+                        })}
 
-											<TableCell key={`update-${index}`} align={"center"}>
-												{/* <UpdateImage
+                        <TableCell key={`update-${index}`} align={"center"}>
+                          {/* <UpdateImage
                           onClick={() => deleteOffers(row.id)}
                           src={UpdateIcon}
                           width={"20"}
                           height={"20"}
                         /> */}
 
-												<UpdateProductBtn
-													name="update offer"
-													pagename="offers"
-													placement="end"
-													productDetails={row}
-												/>
-											</TableCell>
+                          <UpdateProductBtn
+                            name="update offer"
+                            pagename="offers"
+                            placement="end"
+                            productDetails={row}
+                          />
+                        </TableCell>
 
-											<TableCell key={`delete-${index}`} align={"center"}>
-												<DeleteImage
-													onClick={() => deleteOffers(row.id)}
-													src={DeleteIcon}
-												/>
-											</TableCell>
-										</TableRow>
-									);
-                })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length}>
-                  No data available
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePaginationStyle
-        rowsPerPageOptions={[10, 25, 50]}
-        component="div"
-        count={state.offersSlice.data?.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-    </Paper>
-    <ToastContainer />
-  </OffersStyled>
-);
-
+                        <TableCell key={`delete-${index}`} align={"center"}>
+                          <DeleteImage
+                            onClick={() => deleteOffers(row.id)}
+                            src={DeleteIcon}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length}>
+                    No data available
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePaginationStyle
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={state.offersSlice.data?.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper>
+      <ToastContainer />
+    </OffersStyled>
+  );
 }
